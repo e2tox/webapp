@@ -1,63 +1,33 @@
-var express = require('express'),
-    path = require('path'),
-    http = require('http'),
-    io = require('socket.io'),
-    wine = require('../routes/wines');
+/**
+ * Copyright 2013 =E.2=TOX
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+var app = require('./appServer/controllers/application');
 
-
-var app = express();
-
-app.configure(function() {
-    app.set('port', process.env.PORT || 5000);
-
-    app.use(express.logger('dev'));
-    //app.use(express.compress());
-    app.use(express.bodyParser());
-    app.use(express.cookieParser('some secret'));
-    app.use(express.cookieSession({key:'auth',secret:':salt',cookie:{ path: '/', httpOnly: true, maxAge: null }}));
-
-    app.use(express.static(path.join(__dirname, 'public')));
-});
-
-app.get('/wines', wine.findAll);
-app.get('/wines/:id', wine.findById);
-app.post('/wines', wine.addWine);
-app.put('/wines/:id', wine.updateWine);
-app.delete('/wines/:id', wine.deleteWine);
-
-var server = http.createServer(app);
-io = io.listen(server);
-
-io.configure(function () {
-    io.set('authorization', function (handshakeData, callback) {
-        if (handshakeData.xdomain) {
-            callback('Cross-domain connections are not allowed');
-        } else {
-            callback(null, true);
-        }
-    });
-});
-
-io.sockets.on('connection', function (socket) {
-
-    socket.on('message', function (message) {
-        console.log("Got message: " + message);
-        ip = socket.handshake.address.address;
-        url = message;
-        io.sockets.emit('pageview', { 'connections': Object.keys(io.connected).length, 'ip': '***.***.***.' + ip.substring(ip.lastIndexOf('.') + 1), 'url': url, 'xdomain': socket.handshake.xdomain, 'timestamp': new Date()});
-    });
-
-    socket.on('disconnect', function () {
-        console.log("Socket disconnected");
-        io.sockets.emit('pageview', { 'connections': Object.keys(io.connected).length});
-    });
-
-});
-
-server.listen(app.get('port'), function () {
+//noinspection JSUnresolvedVariable
+app.createServer({
+    version: '0.0.1',
+    port: process.env.PORT || 5000,
+    authCookie: 'auth',
+    cookieSalt: ':salt',
+    rootDir: __dirname + '/public',
+    viewsDir: __dirname + '/appServer/views',
+    layoutsDir: __dirname + '/appServer/views/layouts',
+    partiesDir: __dirname + '/appServer/views/partials',
+    silent: 'test' == process.env.NODE_ENV,
+    logger: '832ce42c-6e68-49f8-9c38-7acf8eb3362a'
+},
+function(http, app) {
     console.log("Express server listening on port " + app.get('port'));
 });
-
-exports.startServer = function() {};
-
