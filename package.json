@@ -17,6 +17,8 @@
     },
     "dependencies": {
         "express": "3.x",
+        "less-middleware": "0.1.x",
+        "requirejs-middleware": "0.0.x",
         "express3-handlebars": "0.4.x",
         "lodash": "1.x",
         "socket.io": "0.9.x"

@@ -22,8 +22,12 @@ app.createServer({
     authCookie: 'auth',
     cookieSalt: ':salt',
     rootDir: __dirname + '/public',
+    cacheDir: __dirname + '/cache',
+    scriptDir: __dirname + '/app/scripts',
+    lessDir: __dirname + '/app/styles',
     viewsDir: __dirname + '/appServer/views',
     layoutsDir: __dirname + '/appServer/views/layouts',
+    defaultLayout: 'site',
     partiesDir: __dirname + '/appServer/views/partials',
     silent: 'test' == process.env.NODE_ENV,
     logger: '832ce42c-6e68-49f8-9c38-7acf8eb3362a'

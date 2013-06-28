@@ -32,6 +32,31 @@ exports.createServer = function(config, callback) {
 
         // only log for server file but static files
         app.use(express.logger());
+
+        app.use(require('less-middleware')({
+            src: config.lessDir,
+            //prefix: '/stylesheets',
+            dest: config.cacheDir,// + '/stylesheets',
+            compress: true
+        }));
+
+        app.use(require('requirejs-middleware')({
+            src: config.scriptDir,
+            dest: config.cacheDir,
+//            build: true,
+//            debug: true,
+//            defaults: {
+//                preserveLicenseComments: false
+//            },
+            modules: {
+                "/index.js": {
+                    baseUrl: config.scriptDir,
+                    include: "index"
+                }
+            }
+        }));
+
+        app.use(express.static(config.cacheDir));
         app.use(express.static(config.rootDir));
 
         app.use(app.router);
@@ -49,7 +74,7 @@ exports.createServer = function(config, callback) {
 //    });
 
         var hbs = exphbs.create({
-            defaultLayout: 'site',
+            defaultLayout: config.defaultLayout,
             layoutsDir:config.layoutsDir,
             partialsDir:config.partiesDir,
             // Specify helpers which are only registered on this instance.
@@ -72,7 +97,7 @@ exports.createServer = function(config, callback) {
 
     });
 
-    var site = require('../site');
+    var site = require('../routes/site');
 
     // register all routes
     site.register(app);
